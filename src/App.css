@@ -1,6 +1,6 @@
 /* src/App.css */
 
-/* --- 1. BACKGROUND & OVERLAYS --- */
+/* --- 1. CORE LAYOUT --- */
 
 .background-container {
     position: absolute;
@@ -16,7 +16,6 @@
     height: 100%;
     background-size: cover;
     background-position: center;
-    /* The fade transition */
     transition: opacity 300ms ease-in-out;
 }
 
@@ -26,7 +25,6 @@
     left: 0;
     width: 100%;
     height: 100%;
-    /* Creates a dark vignette to focus the eye */
     background: radial-gradient(
         ellipse at center,
         rgba(0, 0, 0, 0.3) 0%,
@@ -34,89 +32,100 @@
     );
 }
 
-/* --- 2. HEADER --- */
+/* --- 2. THE "GLASS" EFFECT & ANIMATION --- */
+
+/* This reusable style will be applied to all panels */
+.glass-panel {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+
+    /* New animation properties */
+    transition:
+        opacity 300ms ease-out,
+        transform 300ms ease-out;
+    transform: translateY(0);
+}
+
+/* New fade-out animation state */
+.fading {
+    opacity: 0;
+    transform: translateY(
+        10px
+    ); /* Element will slide down slightly as it fades */
+}
+
+/* --- 3. UI PANELS --- */
 
 .app-header {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 2rem;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 2rem;
     text-align: center;
-    z-index: 10;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     font-weight: 300;
     letter-spacing: 2px;
     text-transform: uppercase;
-    transition: opacity 300ms ease-in-out;
 }
-
 .app-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
 }
-
-/* --- 3. STORY CONTENT --- */
 
 .story-content {
-    position: relative;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    position: relative; /* No longer absolute */
+    padding: 2rem 2.5rem;
     text-align: center;
     max-width: 700px;
-    margin: 0 auto;
-    height: 100vh;
-    padding: 0 2rem;
-    padding-bottom: 15vh; /* Push content up from controls */
-    transition: opacity 300ms ease-in-out;
+    width: 90%;
+    max-height: 50vh; /* Give it a max height */
+    overflow-y: auto; /* Allow scrolling if text is long */
 }
 
 .story-content h2 {
     font-family: "Lato", sans-serif;
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     font-weight: 700;
     margin-bottom: 1rem;
 }
 
 .story-content p {
     font-family: "Merriweather", serif;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.9);
-    max-height: 40vh;
-    overflow-y: auto;
-    padding-right: 10px; /* For scrollbar spacing */
+}
+
+.controls-container {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 700px;
+    padding: 1.5rem 2rem;
 }
 
 /* --- 4. CONTROLS --- */
 
-.controls-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 2rem;
-    z-index: 10;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-}
-
 .audio-player {
     width: 100%;
-    max-width: 600px;
     margin: 0 auto 1.5rem auto;
     display: block;
-    /* Style the default player for dark mode */
-    color-scheme: dark;
+
+    /* A CSS filter hack to style the audio player for dark mode */
+    filter: invert(1) brightness(0.8) sepia(1) hue-rotate(180deg);
 }
 
 .navigation {
     display: flex;
     justify-content: center;
-    gap: 1.5rem;
-    max-width: 600px;
-    margin: 0 auto;
+    gap: 1rem;
 }
 
 .nav-button {
@@ -125,17 +134,18 @@
     font-size: 1rem;
     font-weight: 600;
     font-family: "Lato", sans-serif;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .nav-button:not(:disabled):hover {
     background-color: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.02); /* Add a subtle "pop" on hover */
 }
 
 .nav-button:disabled {
@@ -145,8 +155,25 @@
     cursor: not-allowed;
 }
 
-/* --- 5. FADE ANIMATION --- */
+/* --- 5. NEW STATUS/ERROR STYLES --- */
 
-.fading {
-    opacity: 0;
+.status-message {
+    text-align: center;
+    height: 1.5rem; /* Reserve space to prevent layout jump */
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.status-message .error-text {
+    color: #ff8a80; /* A modern, soft red */
+    font-weight: 400;
+}
+
+/* Tweak audio player margin since status is above it */
+.audio-player {
+    width: 100%;
+    margin: 0 auto 1.5rem auto; /* Remove top margin */
+    display: block;
+    filter: invert(1) brightness(0.8) sepia(1) hue-rotate(180deg);
 }
