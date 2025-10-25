@@ -1,42 +1,152 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* src/App.css */
+
+/* --- 1. BACKGROUND & OVERLAYS --- */
+
+.background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.background-image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    /* The fade transition */
+    transition: opacity 300ms ease-in-out;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.vignette-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Creates a dark vignette to focus the eye */
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0.3) 0%,
+        rgba(0, 0, 0, 0.9) 100%
+    );
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* --- 2. HEADER --- */
+
+.app-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem;
+    text-align: center;
+    z-index: 10;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: opacity 300ms ease-in-out;
 }
 
-.card {
-  padding: 2em;
+.app-header h1 {
+    font-size: 1.5rem;
 }
 
-.read-the-docs {
-  color: #888;
+/* --- 3. STORY CONTENT --- */
+
+.story-content {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+    height: 100vh;
+    padding: 0 2rem;
+    padding-bottom: 15vh; /* Push content up from controls */
+    transition: opacity 300ms ease-in-out;
+}
+
+.story-content h2 {
+    font-family: "Lato", sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.story-content p {
+    font-family: "Merriweather", serif;
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.9);
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 10px; /* For scrollbar spacing */
+}
+
+/* --- 4. CONTROLS --- */
+
+.controls-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem;
+    z-index: 10;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.audio-player {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 1.5rem auto;
+    display: block;
+    /* Style the default player for dark mode */
+    color-scheme: dark;
+}
+
+.navigation {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.nav-button {
+    flex-grow: 1;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: "Lato", sans-serif;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-button:not(:disabled):hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-button:disabled {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #888;
+    border-color: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+
+/* --- 5. FADE ANIMATION --- */
+
+.fading {
+    opacity: 0;
 }
