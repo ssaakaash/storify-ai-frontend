@@ -10,17 +10,14 @@
 
 body {
     font-family: "Lato", sans-serif;
-    background-color: #1a1a1a; /* A solid dark background */
-    color: #e0e0e0;
+    /* A clean, slightly warm, dark background for the whole page */
+    background-color: #1a1a1a;
+    color: #333; /* Default text color will be dark */
     overflow: hidden;
 }
 
 #root {
     width: 100vw;
     height: 100vh;
-    position: relative;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }

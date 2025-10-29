@@ -1,17 +1,32 @@
 /* src/App.css */
 
-/* --- 1. CORE LAYOUT --- */
-
-.background-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+/* --- 1. NEW: Main Layout --- */
+.app-wrapper {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
 }
 
-.background-image {
+.illustration-panel {
+    width: 45%; /* Image takes 45% of the width */
+    height: 100%;
+    background-color: #000;
+    position: relative;
+}
+
+.content-panel {
+    width: 55%; /* Content takes 55% of the width */
+    height: 100%;
+    /* A clean, warm "parchment" color */
+    background-color: #fdfaf5;
+    display: flex;
+    flex-direction: column; /* Stack header, content, controls */
+    position: relative;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5); /* Shadow for depth */
+}
+
+/* --- 2. NEW: Illustration Styling --- */
+.illustration-image {
     width: 100%;
     height: 100%;
     background-size: cover;
@@ -19,107 +34,58 @@
     transition: opacity 300ms ease-in-out;
 }
 
-.vignette-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(
-        ellipse at center,
-        rgba(0, 0, 0, 0.3) 0%,
-        rgba(0, 0, 0, 0.9) 100%
-    );
-}
-
-/* --- 2. THE "GLASS" EFFECT & ANIMATION --- */
-
-/* This reusable style will be applied to all panels */
-.glass-panel {
-    background: rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-    z-index: 5;
-
-    /* New animation properties */
-    transition:
-        opacity 300ms ease-out,
-        transform 300ms ease-out;
-    transform: translateY(0);
-}
-
-/* New fade-out animation state */
-.fading {
-    opacity: 0;
-    transform: translateY(
-        10px
-    ); /* Element will slide down slightly as it fades */
-}
-
-/* --- 3. UI PANELS --- */
-
+/* --- 3. NEW: Content Panel Styling --- */
 .app-header {
-    position: absolute;
-    top: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.75rem 2rem;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 300;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
 }
+
 .app-header h1 {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
 }
 
 .story-content {
-    position: relative; /* No longer absolute */
-    padding: 2rem 2.5rem;
-    text-align: center;
-    max-width: 700px;
-    width: 90%;
-    max-height: 50vh; /* Give it a max height */
-    overflow-y: auto; /* Allow scrolling if text is long */
+    flex-grow: 1; /* This makes the text area fill available space */
+    padding: 2.5rem;
+    overflow-y: auto; /* Make the text scrollable */
 }
 
-.story-content h2 {
-    font-family: "Lato", sans-serif;
+.story-title {
     font-size: 2.25rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    color: #111;
+    transition: opacity 300ms ease-in-out;
 }
 
-.story-content p {
+.story-text {
     font-family: "Merriweather", serif;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     line-height: 1.8;
-    color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    transition: opacity 300ms ease-in-out;
 }
 
+.fading {
+    opacity: 0;
+}
+
+/* --- 4. NEW: Controls Container Styling --- */
 .controls-container {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 700px;
-    padding: 1.5rem 2rem;
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid #e0e0e0;
+    background-color: #fff;
 }
-
-/* --- 4. CONTROLS --- */
 
 .audio-player {
     width: 100%;
     margin: 0 auto 1.5rem auto;
     display: block;
-
-    /* A CSS filter hack to style the audio player for dark mode */
-    filter: invert(1) brightness(0.8) sepia(1) hue-rotate(180deg);
 }
 
 .navigation {
@@ -134,46 +100,130 @@
     font-size: 1rem;
     font-weight: 600;
     font-family: "Lato", sans-serif;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background-color: rgba(255, 255, 255, 0.1);
     color: white;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .nav-button:not(:disabled):hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: scale(1.02); /* Add a subtle "pop" on hover */
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
 }
 
 .nav-button:disabled {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #888;
-    border-color: rgba(255, 255, 255, 0.1);
+    background: #e0e0e0;
+    color: #999;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-/* --- 5. NEW STATUS/ERROR STYLES --- */
+.upload-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
 
+.upload-button:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+/* --- 5. NEW: Status/Error Styling --- */
 .status-message {
     text-align: center;
-    height: 1.5rem; /* Reserve space to prevent layout jump */
+    height: 1.5rem;
     margin-bottom: 1.5rem;
-    font-weight: 300;
-    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+    color: #777;
 }
 
 .status-message .error-text {
-    color: #ff8a80; /* A modern, soft red */
-    font-weight: 400;
+    color: #d93025;
+    font-weight: 600;
 }
 
-/* Tweak audio player margin since status is above it */
-.audio-player {
+/* --- 6. NEW: Modal Styling --- */
+.processing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    margin: 0 auto 1.5rem auto; /* Remove top margin */
-    display: block;
-    filter: invert(1) brightness(0.8) sepia(1) hue-rotate(180deg);
+    height: 100%;
+    z-index: 99;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+}
+
+.upload-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 600px;
+    z-index: 100;
+    padding: 2.5rem;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.upload-modal h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    color: #222;
+}
+
+.upload-textarea {
+    width: 100%;
+    height: 300px;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #fdfaf5;
+    color: #333;
+    font-family: "Merriweather", serif;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.upload-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.upload-controls .nav-button {
+    flex: 1;
+}
+
+.upload-controls .nav-button:first-child {
+    /* Cancel button style */
+    background: #eee;
+    color: #555;
+}
+.upload-controls .nav-button:first-child:hover {
+    background: #ddd;
+    opacity: 1;
+    transform: scale(1.02);
+    box-shadow: none;
 }

@@ -3,123 +3,87 @@
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
 
-// --- API Endpoint ---
-const API_ENDPOINT =
-  "https://fzp9wkiip9.execute-api.ap-south-1.amazonaws.com/v1/narration";
+// --- API Endpoints ---
+const NARRATION_API =
+  "https://9t2vog0wx6.execute-api.us-east-1.amazonaws.com/v1/narration";
+const ILLUSTRATION_API =
+  "https://9t2vog0wx6.execute-api.us-east-1.amazonaws.com/v1/illustration";
 
-// --- Story Data (with new chapter 3) ---
-const storyData = [
-  {
-    chapter: 1,
-    title: "The Long Night",
-    text: `The sun dipped below the horizon, painting the sky in shades of bruised purple. A lone figure stood on the hill, overlooking the sleeping town. It was the beginning of a long journey, one that would test his courage and resolve. The air was still, holding its breath.`,
-    imageUrl:
-      "https://images.unsplash.com/photo-1475778822368-407b6f6a7931?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzEyOXwwfDF8c2VhcmNofDEyfHxtb29uJTIwY2l0eXxlbnwwfHx8fDE3MjkxNzQwODV8MA&ixlib=rb-4.0.3&q=80&w=1080",
-  },
-  {
-    chapter: 2,
-    title: "The Cold Wind",
-    text: `He checked his supplies: a half-empty canteen, a compass that spun wildly, and a stale loaf of bread. This was not the start he had hoped for. The night air grew sharp, and a distant, mournful howl echoed through the valley. He pulled his cloak tighter, his eyes scanning the darkness.`,
-    imageUrl:
-      "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzEyOXwwfDF8c2VhcmNofDd8fGZvZ2d5JTIwZm9yZXN0fGVufDB8fHx8MTcyOTE3NDA1NHww&ixlib=rb-4.0.3&q=80&w=1080",
-  },
-  {
-    chapter: 3,
-    title: "The Fading Light",
-    text: `The path ahead was unclear, shrouded in mist. He wasn't sure he could go on, but a small flicker of hope remained. He took one more step into the unknown.`,
-    imageUrl:
-      "https://images.unsplash.com/photo-1488866022504-f2584929ca5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzEyOXwwfDF8c2VhcmNofDEwfHxtaXN0eSUyMHBhdGh8ZW58MHx8fHwxNzI5MTc0MDU0fDA&ixlib=rb-4.0.3&q=80&w=1080",
-  },
-];
+// --- Default Story Data ---
+const defaultStoryData = [];
+
+const MAX_CHUNK_SIZE = 2800;
 
 function App() {
+  const [story, setStory] = useState(defaultStoryData);
   const [chapterIndex, setChapterIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
   const [audioUrl, setAudioUrl] = useState("");
-
-  // --- NEW UX STATE ---
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [audioError, setAudioError] = useState(null);
-  // Tracks if user has interacted, to allow autoplay
   const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState("Processing...");
+  const [uploadText, setUploadText] = useState("");
 
   const audioRef = useRef(null);
-  const currentChapter = storyData[chapterIndex];
+  const currentChapter = story[chapterIndex];
 
-  // --- 1. AUDIO FETCHING ---
+  // --- LOGIC FUNCTIONS (All unchanged) ---
+
   useEffect(() => {
     const fetchAudio = async () => {
       if (!currentChapter) return;
-
       setIsLoadingAudio(true);
-      setAudioError(null); // Clear previous errors
+      setAudioError(null);
       setAudioUrl("");
-
       try {
         const response = await fetch(
-          `${API_ENDPOINT}?chapter=${currentChapter.chapter}`,
+          `${NARRATION_API}?chapter=${currentChapter.chapter}`,
         );
         if (!response.ok) {
-          throw new Error(
-            `Narration for chapter ${currentChapter.chapter} not found.`,
-          );
+          throw new Error(`Narration for part ${chapterIndex + 1} not found.`);
         }
         const data = await response.json();
         setAudioUrl(data.audioUrl);
       } catch (error) {
-        console.error("Error fetching audio URL:", error);
-        setAudioError(error.message); // Show error to user
+        setAudioError(error.message);
       } finally {
         setIsLoadingAudio(false);
       }
     };
-
     fetchAudio();
-  }, [currentChapter]); // Runs when chapter changes
+  }, [currentChapter]);
 
-  // --- 2. AUTOPLAY LOGIC ---
   useEffect(() => {
     if (audioUrl && audioRef.current) {
       audioRef.current.src = audioUrl;
       audioRef.current.load();
-
-      // Autoplay is only attempted if the user has interacted
       if (userHasInteracted) {
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
-          playPromise.catch((error) => {
-            console.warn("Autoplay was prevented:", error);
-          });
+          playPromise.catch((error) =>
+            console.warn("Autoplay was prevented:", error),
+          );
         }
       }
     }
-  }, [audioUrl, userHasInteracted]); // Runs when audioUrl or interaction state changes
+  }, [audioUrl, userHasInteracted]);
 
-  // --- 3. AUTO-NEXT CHAPTER LOGIC ---
   const handleAudioEnded = () => {
-    // Check if it's NOT the last chapter
-    if (chapterIndex < storyData.length - 1) {
-      handleNavigation("next");
-    }
+    if (chapterIndex < story.length - 1) handleNavigation("next");
   };
 
-  // --- 4. NAVIGATION LOGIC ---
   const handleNavigation = (direction) => {
     if (isFading) return;
-
-    // Any navigation click counts as a user interaction
     setUserHasInteracted(true);
-
     const newIndex =
       direction === "next"
-        ? Math.min(chapterIndex + 1, storyData.length - 1)
+        ? Math.min(chapterIndex + 1, story.length - 1)
         : Math.max(chapterIndex - 1, 0);
-
     if (newIndex === chapterIndex) return;
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    if (audioRef.current) audioRef.current.pause();
     setIsFading(true);
     setTimeout(() => {
       setChapterIndex(newIndex);
@@ -127,70 +91,172 @@ function App() {
     }, 300);
   };
 
-  // This function unlocks autoplay on the first play click
-  const handleFirstPlay = () => {
-    setUserHasInteracted(true);
+  const handleFirstPlay = () => setUserHasInteracted(true);
+
+  const handleNarrate = async () => {
+    if (isProcessing || !uploadText) return;
+    setShowUploadModal(false);
+    setIsProcessing(true);
+    const paragraphs = uploadText
+      .split("\n\n")
+      .filter((p) => p.trim().length > 0);
+    const chunks = [];
+    let currentChunk = "";
+    for (const paragraph of paragraphs) {
+      if (currentChunk.length + paragraph.length + 2 > MAX_CHUNK_SIZE) {
+        chunks.push(currentChunk);
+        currentChunk = paragraph;
+      } else {
+        currentChunk += (currentChunk.length > 0 ? "\n\n" : "") + paragraph;
+      }
+    }
+    chunks.push(currentChunk);
+    const newStoryData = [];
+    const chapterName = `custom-${Date.now()}`;
+    try {
+      for (let i = 0; i < chunks.length; i++) {
+        const chunkText = chunks[i];
+        const partName = `${chapterName}-part-${i}`;
+        setProcessingMessage(
+          `Processing audio for part ${i + 1}/${chunks.length}...`,
+        );
+        await fetch(NARRATION_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: chunkText, chapter: partName }),
+        });
+        setProcessingMessage(
+          `Generating illustration for part ${i + 1}/${chunks.length}...`,
+        );
+        const imageResponse = await fetch(ILLUSTRATION_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: chunkText }),
+        });
+        if (!imageResponse.ok)
+          throw new Error(`Failed to generate image for part ${i + 1}`);
+        const imageData = await imageResponse.json();
+        newStoryData.push({
+          chapter: partName,
+          title: `Part ${i + 1}`,
+          text: chunkText,
+          imageUrl: imageData.imageUrl,
+        });
+      }
+      setStory(newStoryData);
+      setChapterIndex(0);
+      setUserHasInteracted(true);
+      setUploadText("");
+    } catch (error) {
+      console.error("Error during narration processing:", error);
+      setAudioError("Failed to process narration. Please try again.");
+      setStory(defaultStoryData);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const fadeClass = isFading ? "fading" : "";
 
+  // --- NEW HTML STRUCTURE ---
   return (
     <>
-      <div className="background-container">
-        <div
-          className={`background-image ${fadeClass}`}
-          style={{ backgroundImage: `url(${currentChapter.imageUrl})` }}
-        />
-        <div className="vignette-overlay" />
-      </div>
-
-      <header className={`app-header glass-panel ${fadeClass}`}>
-        <h1>Storify AI</h1>
-      </header>
-
-      <div className={`story-content glass-panel ${fadeClass}`}>
-        <h2>{currentChapter.title}</h2>
-        <p>{currentChapter.text}</p>
-      </div>
-
-      <div className={`controls-container glass-panel ${fadeClass}`}>
-        {/* --- 5. NEW LOADING/ERROR UI --- */}
-        <div className="status-message">
-          {isLoadingAudio && <p>Loading narration...</p>}
-          {audioError && <p className="error-text">Error: {audioError}</p>}
+      <div className="app-wrapper">
+        {/* --- Left Column (Illustration) --- */}
+        <div className="illustration-panel">
+          <div
+            className={`illustration-image ${fadeClass}`}
+            style={{ backgroundImage: `url(${currentChapter?.imageUrl})` }}
+          />
         </div>
+        {/* --- Right Column (Content) --- */}
+        <div className="content-panel">
+          <header className="app-header">
+            <h1>Storify AI</h1>
+            <button
+              className="upload-button"
+              onClick={() => setShowUploadModal(true)}
+            >
+              Load Story
+            </button>
+          </header>
 
-        <audio
-          ref={audioRef}
-          controls
-          className="audio-player"
-          onEnded={handleAudioEnded} // Auto-next
-          onPlay={handleFirstPlay} // Unlocks autoplay
-        >
-          Your browser does not support the audio element.
-        </audio>
+          <div className="story-content">
+            <h2 className={`story-title ${fadeClass}`}>
+              {currentChapter?.title}
+            </h2>
+            <p className={`story-text ${fadeClass}`}>{currentChapter?.text}</p>
+          </div>
 
-        <div className="navigation">
-          <button
-            onClick={() => handleNavigation("prev")}
-            disabled={chapterIndex === 0 || isFading || isLoadingAudio}
-            className="nav-button"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => handleNavigation("next")}
-            disabled={
-              chapterIndex === storyData.length - 1 ||
-              isFading ||
-              isLoadingAudio
-            }
-            className="nav-button"
-          >
-            Next
-          </button>
+          <div className="controls-container">
+            <div className="status-message">
+              {isLoadingAudio && <p>Loading narration...</p>}
+              {audioError && <p className="error-text">Error: {audioError}</p>}
+            </div>
+            <audio
+              ref={audioRef}
+              controls
+              className="audio-player"
+              onEnded={handleAudioEnded}
+              onPlay={handleFirstPlay}
+            >
+              Your browser does not support the audio element.
+            </audio>
+            <div className="navigation">
+              <button
+                onClick={() => handleNavigation("prev")}
+                disabled={chapterIndex === 0 || isFading || isLoadingAudio}
+                className="nav-button"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => handleNavigation("next")}
+                disabled={
+                  chapterIndex === story.length - 1 ||
+                  isFading ||
+                  isLoadingAudio
+                }
+                className="nav-button"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>{" "}
+        {/* End Content Panel */}
+      </div>{" "}
+      {/* End App Wrapper */}
+      {/* --- MODALS & OVERLAYS (Unchanged) --- */}
+      {isProcessing && (
+        <div className="processing-overlay">{processingMessage}</div>
+      )}
+      {showUploadModal && (
+        <div className="upload-modal">
+          <h2>Load Your Story</h2>
+          <textarea
+            className="upload-textarea"
+            placeholder="Paste your chapter text here..."
+            value={uploadText}
+            onChange={(e) => setUploadText(e.target.value)}
+          />
+          <div className="upload-controls">
+            <button
+              className="nav-button"
+              onClick={() => setShowUploadModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="nav-button"
+              onClick={handleNarrate}
+              disabled={!uploadText}
+            >
+              Narrate
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
